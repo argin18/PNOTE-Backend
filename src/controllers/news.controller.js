@@ -113,7 +113,7 @@ const getOneNews = async (req, res) => {
       .findByIdAndUpdate(
         req.params.id,
         { $inc: { viewCount: 1 } },
-        { returnDocument: 'after' }
+        { new:true }
       )
       .populate("postedBy", "name email");
 
@@ -163,7 +163,7 @@ const updateNews = async (req, res) => {
     const updated = await newsModel.findByIdAndUpdate(
       req.params.id,
       { $set: updateData },
-      { returnDocument: 'after' }
+      { new:true }
     );
 
     res.status(200).json({ message: "News updated successfully", news: updated });
