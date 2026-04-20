@@ -107,7 +107,7 @@ const uploadNote = async (req, res) => {
       const result = await cloudinary.uploader.upload(fileUrl, {
         resource_type: "image",
         format: "jpg",
-        page: 1,                          // ✅ fixed: was "pages"
+        page: 1, // ✅ fixed: was "pages"
         transformation: [{ width: 400, height: 300, crop: "fill" }],
         folder: "Pnote/thumbnails",
       });
@@ -115,7 +115,7 @@ const uploadNote = async (req, res) => {
     } else {
       thumbnailUrl = fileUrl.replace(
         "/upload/",
-        "/upload/w_400,h_300,c_fill/"    // ✅ fixed: no g_auto
+        "/upload/w_400,h_300,c_fill/", // ✅ fixed: no g_auto
       );
     }
 
@@ -140,7 +140,10 @@ const uploadNote = async (req, res) => {
     } = req.body;
 
     const tagsArray = tags
-      ? tags.split(" ").map((t) => t.trim()).filter(Boolean)
+      ? tags
+          .split(" ")
+          .map((t) => t.trim())
+          .filter(Boolean)
       : [];
 
     const uploadedBy = req.user?.id || null;
@@ -226,10 +229,15 @@ const getAllNotes = async (req, res) => {
       })
       .sort({ createdAt: -1 });
 
+    // const filtered = notes.filter(
+    //   (note) => note.uploadedBy !== null || note.isAnonymous === true,
+    // );
     const filtered = notes.filter(
-      (note) => note.uploadedBy !== null || note.isAnonymous === true,
+      (note) =>
+        note.uploadedBy !== null ||
+        note.isAnonymous === true ||
+        note.uploadedBy === null,
     );
-
     return res
       .status(200)
       .json({ message: "Notes fetched successfully", notes: filtered });
