@@ -14,7 +14,8 @@ const generateToken = (userId, role) =>
 const setTokenCookie = (res, token) =>
   res.cookie("token", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    // secure: process.env.NODE_ENV === "production",
+    secure:true,
     sameSite: "none",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
@@ -157,7 +158,8 @@ const logoutUser = (req, res) => {
   try {
     res.clearCookie("token", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      // secure: process.env.NODE_ENV === "production",
+      secure:true,
       sameSite: "none",
     });
     res.status(200).json({ message: "Logged out successfully" });
@@ -179,7 +181,8 @@ const getMe = async (req, res) => {
     if (user.isBanned) {
       res.clearCookie("token", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        // secure: process.env.NODE_ENV === "production",
+        secure:true,
         sameSite: "none",
       })
       return res.status(403).json({ message: "Your account has been banned." })
