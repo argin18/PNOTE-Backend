@@ -5,6 +5,17 @@ const User = require("../models/user.model"); // FIX: needed for auto-resolving 
 // ─── Upload Note (guest + logged-in user) ─────────────────────────────────────
 const uploadNote = async (req, res) => {
   try {
+    // ── Guest upload time-window check ────────────────────────────────────────
+    const isGuest = !req.user;
+    if (isGuest) {
+      const deadline = new Date(process.env.GUEST_UPLOAD_DEADLINE);
+      if (Date.now() > deadline) {
+        return res.status(403).json({
+          message: "Guest uploads are no longer allowed. Please create an account to upload notes.",
+        });
+      }
+    }
+
     if (!req.files || !req.files.file || !req.files.file[0]) {
       return res.status(400).json({ message: "Note file is required" });
     }
@@ -42,15 +53,13 @@ const uploadNote = async (req, res) => {
       course, semester, subject, authorName, creditInfo, tags,
     } = req.body;
 
-    // FIX: split by space OR comma
     const tagsArray = tags
       ? tags.split(/[\s,]+/).map((t) => t.trim()).filter(Boolean)
       : [];
 
     const uploadedBy = req.user?.id || null;
-    const isGuest = !uploadedBy;
 
-    // FIX: auto-resolve authorName from DB if logged-in user didn't provide it
+    // ── Resolve Author Name ────────────────────────────────────────────────────
     let resolvedAuthorName = authorName?.trim() || "";
     if (!resolvedAuthorName) {
       if (!isGuest) {
@@ -69,7 +78,7 @@ const uploadNote = async (req, res) => {
       tags: tagsArray,
       fileUrl, fileType, thumbnailUrl,
       uploadedBy,
-      isAnonymous: !resolvedAuthorName && !authorPhotoUrl && isGuest,
+      isAnonymous: isGuest, // ← fixed: true only when guest, not the broken triple condition
     });
 
     res.status(201).json({ message: "Note uploaded successfully", note });

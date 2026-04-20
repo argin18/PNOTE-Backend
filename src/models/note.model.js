@@ -39,17 +39,20 @@ const notesSchema = new mongoose.Schema(
     university: {
       type: String,
       trim: true,
-      required: true,
+      required: false,
+      default: "",
     },
     course: {
       type: String,
       trim: true,
-      required: true,
+      required: false,
+      default: "",
     },
     semester: {
       type: String,
       trim: true,
-      required: true,
+      required: false,
+      default: "",
     },
     subject: {
       type: String,
@@ -80,11 +83,11 @@ const notesSchema = new mongoose.Schema(
     //   required: true,
     // },
     uploadedBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  required: false,  // ← must be false
-  default: null,
-},
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false, // ← must be false
+      default: null,
+    },
     isAnonymous: {
       type: Boolean,
       default: false,

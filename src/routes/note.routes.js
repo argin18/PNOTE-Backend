@@ -1,7 +1,7 @@
 const express = require('express')
 const upload = require('../middlewares/upload.middleware')
 const { getAllNotes, getOneNote, deleteNote, uploadNote,updateNote } = require('../controllers/note.controller')
-const { authUser } = require('../middlewares/auth.middleware')
+const { authUser,optionalAuth } = require('../middlewares/auth.middleware')
 const router = express.Router()
 
 // router.post("/upload", authUser, upload.fields([
@@ -9,7 +9,7 @@ const router = express.Router()
 //   { name: "photo", maxCount: 1 },
 //   { name: "thumbnail", maxCount: 1 }
 // ]), uploadNote)
-router.post("/upload", upload.fields([
+router.post("/upload",optionalAuth, upload.fields([
   { name: "file", maxCount: 1 },
   { name: "photo", maxCount: 1 },
   { name: "thumbnail", maxCount: 1 }
