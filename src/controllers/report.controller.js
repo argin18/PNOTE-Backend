@@ -19,14 +19,16 @@ const submitReport = async (req, res) => {
     await reportModel.create({ note: noteId, reportedBy: userId, reason });
     res.status(201).json({ message: "Report submitted successfully" });
   } catch (error) {
-    console.error(error);
-    if (error.code === 11000)
-      return res
-        .status(400)
-        .json({ message: "You have already reported this note" });
+  console.error(error);
+  if (error.code === 11000)
+    return res.status(400).json({ message: "You have already reported this note" });
+  
+  // Add this 👇
+  if (error.name === "ValidationError")
+    return res.status(400).json({ message: error.message });
 
-    res.status(500).json({ message: "Internal error" });
-  }
+  res.status(500).json({ message: "Internal error" });
+}
 };
 
 // For get All reports
