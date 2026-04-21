@@ -33,7 +33,7 @@ const uploadNote = async (req, res) => {
         resource_type: "image",
         format: "jpg",
         page: 1,
-        transformation: [{ width: 400, height: 565, crop: "fill" }],
+        transformation: [{ width: 400, height: 225, crop: "fill" }],
         folder: "Pnote/thumbnails",
       });
       thumbnailUrl = result.secure_url;
