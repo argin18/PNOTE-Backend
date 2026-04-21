@@ -11,7 +11,8 @@ const uploadNote = async (req, res) => {
       const deadline = new Date(process.env.GUEST_UPLOAD_DEADLINE);
       if (Date.now() > deadline) {
         return res.status(403).json({
-          message: "Guest uploads are no longer allowed. Please create an account to upload notes.",
+          message:
+            "Guest uploads are no longer allowed. Please create an account to upload notes.",
         });
       }
     }
@@ -23,6 +24,35 @@ const uploadNote = async (req, res) => {
     const noteFile = req.files.file[0];
     const fileUrl = noteFile.path;
     const fileType = noteFile.mimetype === "application/pdf" ? "pdf" : "image";
+
+    // // ── Thumbnail ──────────────────────────────────────────────────────────────
+    // let thumbnailUrl = "";
+
+    // if (req.files.thumbnail && req.files.thumbnail[0]) {
+    //   //  Manual upload — apply transformation
+    //   const rawUrl = req.files.thumbnail[0].path;
+    //   thumbnailUrl = rawUrl.replace("/upload/", "/upload/w_400,h_225,c_fill/");
+    // } else if (fileType === "pdf") {
+    //   const result = await cloudinary.uploader.upload(fileUrl, {
+    //     resource_type: "image",
+    //     format: "jpg",
+    //     page: 1,
+    //     transformation: [{ width: 400, height: 225, crop: "fill" }],
+    //     folder: "Pnote/thumbnails",
+    //   });
+    //   thumbnailUrl = result.secure_url;
+    // } else {
+    //   thumbnailUrl = fileUrl.replace("/upload/", "/upload/w_400,h_225,c_fill/");
+    // }
+
+    // // ── Author Photo ───────────────────────────────────────────────────────────
+    // let authorPhotoUrl = "";
+    // if (req.files.photo && req.files.photo[0]) {
+    //   authorPhotoUrl = req.files.photo[0].path.replace(
+    //     "/upload/",
+    //     "/upload/w_100,h_100,c_fill,g_face/",
+    //   );
+    // }
 
     // ── Thumbnail ──────────────────────────────────────────────────────────────
     let thumbnailUrl = "";
@@ -38,7 +68,7 @@ const uploadNote = async (req, res) => {
       });
       thumbnailUrl = result.secure_url;
     } else {
-      thumbnailUrl = fileUrl.replace("/upload/", "/upload/w_400,h_565,c_fill/");
+      thumbnailUrl = fileUrl.replace("/upload/", "/upload/w_400,h_225,c_fill/");
     }
 
     // ── Author Photo ───────────────────────────────────────────────────────────
@@ -49,34 +79,62 @@ const uploadNote = async (req, res) => {
 
     // ── Body Fields ────────────────────────────────────────────────────────────
     const {
-      title, description, category, university,
-      course, semester, subject, authorName, creditInfo, tags,
+      title,
+      description,
+      category,
+      university,
+      course,
+      semester,
+      subject,
+      authorName,
+      creditInfo,
+      tags,
     } = req.body;
 
     const tagsArray = tags
-      ? tags.split(/[\s,]+/).map((t) => t.trim()).filter(Boolean)
+      ? tags
+          .split(/[\s,]+/)
+          .map((t) => t.trim())
+          .filter(Boolean)
       : [];
 
     const uploadedBy = req.user?.id || null;
 
     // ── Resolve Author Name ────────────────────────────────────────────────────
+    // let resolvedAuthorName = authorName?.trim() || "";
+    // if (!resolvedAuthorName) {
+    //   if (!isGuest) {
+    //     const user = await User.findById(uploadedBy).select("fullname");
+    //     resolvedAuthorName = user?.fullname || "";
+    //   } else {
+    //     resolvedAuthorName = "Guest";
+    //   }
+    // }
+    // ── Resolve Author Name ────────────────────────────────────────────────────
     let resolvedAuthorName = authorName?.trim() || "";
     if (!resolvedAuthorName) {
       if (!isGuest) {
-        const user = await User.findById(uploadedBy).select("fullname");
-        resolvedAuthorName = user?.fullname || "";
+        resolvedAuthorName = req.user?.fullname || ""; // ✅ from middleware
       } else {
         resolvedAuthorName = "Guest";
       }
     }
 
     const note = await noteModel.create({
-      title, description, category, university, course, semester, subject,
+      title,
+      description,
+      category,
+      university,
+      course,
+      semester,
+      subject,
       authorName: resolvedAuthorName,
       authorPhoto: authorPhotoUrl,
       creditInfo: creditInfo || "",
       tags: tagsArray,
-      fileUrl, fileType, thumbnailUrl,
+      fileUrl,
+      fileType,
+      thumbnailUrl,
       uploadedBy,
       isAnonymous: isGuest, // ← fixed: true only when guest, not the broken triple condition
     });
@@ -96,31 +154,37 @@ const getAllNotes = async (req, res) => {
 
     if (search) {
       filter.$or = [
-        { title:       { $regex: search, $options: "i" } },
+        { title: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
-        { tags:        { $elemMatch: { $regex: search, $options: "i" } } },
-        { subject:     { $regex: search, $options: "i" } },
-        { course:      { $regex: search, $options: "i" } },
-        { university:  { $regex: search, $options: "i" } },
-        { authorName:  { $regex: search, $options: "i" } },
+        { tags: { $elemMatch: { $regex: search, $options: "i" } } },
+        { subject: { $regex: search, $options: "i" } },
+        { course: { $regex: search, $options: "i" } },
+        { university: { $regex: search, $options: "i" } },
+        { authorName: { $regex: search, $options: "i" } },
       ];
     }
 
-    if (category)   filter.category   = category;
-    if (university) filter.university = { $regex: `^${university}$`, $options: "i" };
-    if (course)     filter.course     = { $regex: `^${course}$`,     $options: "i" };
-    if (subject)    filter.subject    = { $regex: `^${subject}$`,    $options: "i" };
+    if (category) filter.category = category;
+    if (university)
+      filter.university = { $regex: `^${university}$`, $options: "i" };
+    if (course) filter.course = { $regex: `^${course}$`, $options: "i" };
+    if (subject) filter.subject = { $regex: `^${subject}$`, $options: "i" };
 
     // FIX: removed `match: { isBanned: false }` — it nullifies uploadedBy
     // causing the old filter to drop valid notes. Fetch isBanned in select instead.
     const notes = await noteModel
       .find(filter)
-      .populate({ path: "uploadedBy", select: "username fullname email avatar isBanned" })
+      .populate({
+        path: "uploadedBy",
+        select: "username fullname email avatar isBanned",
+      })
       .sort({ createdAt: -1 });
 
     // FIX: removed the broken always-true filter that was dropping guest notes.
     // All notes that passed { status: "approved" } are valid — return them all.
-    return res.status(200).json({ message: "Notes fetched successfully", notes });
+    return res
+      .status(200)
+      .json({ message: "Notes fetched successfully", notes });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -132,8 +196,15 @@ const getOneNote = async (req, res) => {
   try {
     // FIX: { new: true } — Mongoose option, not { returnDocument: "after" }
     const note = await noteModel
-      .findByIdAndUpdate(req.params.id, { $inc: { viewCount: 1 } }, { new: true })
-      .populate({ path: "uploadedBy", select: "username fullname email avatar isBanned" });
+      .findByIdAndUpdate(
+        req.params.id,
+        { $inc: { viewCount: 1 } },
+        { new: true },
+      )
+      .populate({
+        path: "uploadedBy",
+        select: "username fullname email avatar isBanned",
+      });
 
     if (!note) return res.status(404).json({ message: "Note not found" });
 
@@ -150,11 +221,25 @@ const deleteNote = async (req, res) => {
     const note = await noteModel.findById(req.params.id);
     if (!note) return res.status(404).json({ message: "Note not found" });
 
-    // FIX: optional chaining — uploadedBy is null for guest notes
     const isOwner = note.uploadedBy?.toString() === req.user.id;
     const isAdmin = req.user.role === "admin";
 
-    if (!isOwner && !isAdmin) return res.status(403).json({ message: "Forbidden" });
+    if (!isOwner && !isAdmin)
+      return res.status(403).json({ message: "Forbidden" });
+
+    // Delete main file
+    const publicId = note.fileUrl.split("/upload/")[1].split(".")[0];
+    const resourceType = note.fileType === "pdf" ? "raw" : "image";
+    await cloudinary.uploader.destroy(publicId, {
+      resource_type: resourceType,
+    });
+
+    // Delete thumbnail
+    if (note.thumbnailUrl) {
+      const thumbPath = note.thumbnailUrl.split("/upload/")[1];
+      const thumbId = thumbPath.replace(/^[^/]*\/v\d+\//, "").split(".")[0];
+      await cloudinary.uploader.destroy(thumbId, { resource_type: "image" });
+    }
 
     await noteModel.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: "Note deleted successfully" });
@@ -170,44 +255,61 @@ const updateNote = async (req, res) => {
     const note = await noteModel.findById(req.params.id);
     if (!note) return res.status(404).json({ message: "Note not found" });
 
-    // FIX: optional chaining — guest notes have null uploadedBy
-    if (note.uploadedBy?.toString() !== req.user.id)
+    const isOwner = note.uploadedBy?.toString() === req.user.id;
+    const isAdmin = req.user.role === "admin";
+    if (!isOwner && !isAdmin)
       return res.status(403).json({ message: "Forbidden" });
 
     const {
-      title, description, category, university,
-      course, semester, subject, authorName, creditInfo, tags,
+      title,
+      description,
+      category,
+      university,
+      course,
+      semester,
+      subject,
+      authorName,
+      creditInfo,
+      tags,
     } = req.body;
 
-    // FIX: split by space OR comma
     const tagsArray = tags
-      ? tags.split(/[\s,]+/).map((t) => t.trim()).filter(Boolean)
+      ? tags
+          .split(/[\s,]+/)
+          .map((t) => t.trim())
+          .filter(Boolean)
       : note.tags;
 
-    // FIX: { new: true } instead of { returnDocument: "after" }
     const updated = await noteModel.findByIdAndUpdate(
       req.params.id,
       {
-        title:       title       ?? note.title,
-        description: description ?? note.description,
-        category:    category    ?? note.category,
-        university:  university  ?? note.university,
-        course:      course      ?? note.course,
-        semester:    semester    ?? note.semester,
-        subject:     subject     ?? note.subject,
-        authorName:  authorName  ?? note.authorName,
-        creditInfo:  creditInfo  ?? note.creditInfo,
-        tags:        tagsArray,
-        status:      "pending", // re-queue for admin review
+        title: title?.trim() || note.title,
+        description: description?.trim() || note.description,
+        category: category?.trim() || note.category,
+        university: university?.trim() || note.university,
+        course: course?.trim() || note.course,
+        semester: semester?.trim() || note.semester,
+        subject: subject?.trim() || note.subject,
+        authorName: authorName?.trim() || note.authorName,
+        creditInfo: creditInfo?.trim() ?? note.creditInfo,
+        tags: tagsArray,
       },
-      { new: true }
+      { new: true },
     );
 
-    return res.status(200).json({ message: "Note updated successfully", note: updated });
+    return res
+      .status(200)
+      .json({ message: "Note updated successfully", note: updated });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-module.exports = { uploadNote, getAllNotes, getOneNote, deleteNote, updateNote };
+module.exports = {
+  uploadNote,
+  getAllNotes,
+  getOneNote,
+  deleteNote,
+  updateNote,
+};

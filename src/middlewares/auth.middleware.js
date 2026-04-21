@@ -83,9 +83,9 @@ const optionalAuth = async (req, res, next) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     const userId = decoded._id || decoded.id;
 
-    const user = await userModel.findById(userId).select("role isBanned");
+    const user = await userModel.findById(userId).select("role isBanned fullname");
     if (user && !user.isBanned) {
-      req.user = { id: userId, role: user.role };
+      req.user = { id: userId, role: user.role,fullname:user.fullname };
     }
   } catch {
     // invalid token — treat as guest

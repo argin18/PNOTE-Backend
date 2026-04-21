@@ -11,16 +11,16 @@ const storage = new CloudinaryStorage({
         folder: "Pnote/author-photos",
         resource_type: "image",
         allowed_formats: ["jpg", "jpeg", "png", "webp"],
-        transformation: [{ width: 200, height: 200, crop: "fill" }],
+        transformation: [{ width: 100, height: 100, crop: "fill" }],
       };
     }
      
     if (file.fieldname=== "thumbnail"){
       return {
-         folder: "Pnote/author-photos",
+         folder: "Pnote/thumbnails",
         resource_type: "image",
         allowed_formats: ["jpg", "jpeg", "png", "webp"],
-        transformation: [{ width: 200, height: 200, crop: "fill" }],
+        transformation: [{ width: 400, height: 255, crop: "fill" }],
       }
     }
 
