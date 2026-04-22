@@ -35,6 +35,7 @@ const newsSchema = new mongoose.Schema(
       required: true,
       enum: [
         "exam-form",
+        "exam-center",
         "result",
         "routine",
         "admission",
