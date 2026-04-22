@@ -40,7 +40,11 @@ const getPublicProfile = async (req, res) => {
       .find({ uploadedBy: user._id, status: "approved" })
       .sort({ createdAt: -1 })
 
-    res.status(200).json({ message: "Profile fetched successfully", user, notes })
+       const playlists = await playlistModel
+      .find({ owner: user._id })
+      .populate("notes", "title category")
+      .sort({ createdAt: -1 })
+    res.status(200).json({ message: "Profile fetched successfully", user, notes,playlists })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: "Internal server error" })
