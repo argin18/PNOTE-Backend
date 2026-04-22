@@ -11,7 +11,7 @@ const { authUser } = require('../middlewares/auth.middleware')
 const router = express.Router()
 
 router.post("/", authUser, createPlaylist)
-router.get("/:id", authUser, getPlaylistById)           // ← ADD THIS
+router.get("/:id", getPlaylistById)           // ← ADD THIS
 router.post("/:id/notes", authUser, addNoteToPlaylist)
 router.delete("/:id/notes/:noteId", authUser, removeNoteFromPlaylist)
 router.delete("/:id", authUser, deletePlaylist)
