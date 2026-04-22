@@ -20,7 +20,7 @@ const createPlaylist = async (req, res) => {
 const getPlaylistById = async (req, res) => {
   try {
     const { id } = req.params;
-    const playlist = await playlistModel.findById(id).populate("notes");
+    const playlist = await playlistModel.findById(id).populate("notes").populate("owner", "username _id");
     if (!playlist)
       return res.status(404).json({ message: "Playlist not found" });
 
