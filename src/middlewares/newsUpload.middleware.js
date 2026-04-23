@@ -40,7 +40,7 @@ const fileFilter = (req, file, cb) => {
 const newsUpload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 7 * 1024 * 1024 },  // 3MB — thumbnail doesn't need 7MB
+  limits: { fileSize: 5 * 1024 * 1024 },  // 3MB — thumbnail doesn't need 7MB
 });
 
 module.exports = newsUpload;
