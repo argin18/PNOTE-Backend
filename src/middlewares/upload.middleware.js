@@ -20,7 +20,7 @@ const storage = new CloudinaryStorage({
          folder: "Pnote/thumbnails",
         resource_type: "image",
         allowed_formats: ["jpg", "jpeg", "png", "webp"],
-        transformation: [{ width: 400, height: 255, crop: "fill" }],
+        transformation: [{ width: 400, height: 225, crop: "fill" }],
       }
     }
 

@@ -37,7 +37,7 @@ const getPublicProfile = async (req, res) => {
     if (user.isBanned) return res.status(403).json({ message: "This account has been suspended." })
 
     const notes = await noteModel
-      .find({ uploadedBy: user._id, status: "approved" })
+      .find({ uploadedBy: user._id, status: "approved" }).populate("uploadedBy", "avatar fullname username")
       .sort({ createdAt: -1 })
 
        const playlists = await playlistModel
@@ -55,7 +55,7 @@ const getPublicProfile = async (req, res) => {
 const getMyNotes = async (req, res) => {
   try {
     const id = req.user.id
-    const notes = await noteModel.find({ uploadedBy: id }).sort({ createdAt: -1 })
+    const notes = await noteModel.find({ uploadedBy: id }).populate("uploadedBy", "avatar fullname username").sort({ createdAt: -1 })
     res.status(200).json({ message: "Notes fetched successfully", notes })
   } catch (error) {
     console.error(error)

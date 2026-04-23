@@ -2,10 +2,10 @@ const noteModel = require("../models/note.model");
 const cloudinary = require("../config/cloudinary");
 const User = require("../models/user.model"); // FIX: needed for auto-resolving authorName
 
-// ─── Upload Note (guest + logged-in user) ─────────────────────────────────────
+//  Upload Note (guest + logged-in user)
 const uploadNote = async (req, res) => {
   try {
-    // ── Guest upload time-window check ────────────────────────────────────────
+    //  Guest upload time-window check
     const isGuest = !req.user;
     if (isGuest) {
       const deadline = new Date(process.env.GUEST_UPLOAD_DEADLINE);
@@ -25,36 +25,7 @@ const uploadNote = async (req, res) => {
     const fileUrl = noteFile.path;
     const fileType = noteFile.mimetype === "application/pdf" ? "pdf" : "image";
 
-    // // ── Thumbnail ──────────────────────────────────────────────────────────────
-    // let thumbnailUrl = "";
-
-    // if (req.files.thumbnail && req.files.thumbnail[0]) {
-    //   //  Manual upload — apply transformation
-    //   const rawUrl = req.files.thumbnail[0].path;
-    //   thumbnailUrl = rawUrl.replace("/upload/", "/upload/w_400,h_225,c_fill/");
-    // } else if (fileType === "pdf") {
-    //   const result = await cloudinary.uploader.upload(fileUrl, {
-    //     resource_type: "image",
-    //     format: "jpg",
-    //     page: 1,
-    //     transformation: [{ width: 400, height: 225, crop: "fill" }],
-    //     folder: "Pnote/thumbnails",
-    //   });
-    //   thumbnailUrl = result.secure_url;
-    // } else {
-    //   thumbnailUrl = fileUrl.replace("/upload/", "/upload/w_400,h_225,c_fill/");
-    // }
-
-    // // ── Author Photo ───────────────────────────────────────────────────────────
-    // let authorPhotoUrl = "";
-    // if (req.files.photo && req.files.photo[0]) {
-    //   authorPhotoUrl = req.files.photo[0].path.replace(
-    //     "/upload/",
-    //     "/upload/w_100,h_100,c_fill,g_face/",
-    //   );
-    // }
-
-    // ── Thumbnail ──────────────────────────────────────────────────────────────
+    //  Thumbnail
     let thumbnailUrl = "";
     if (req.files.thumbnail && req.files.thumbnail[0]) {
       thumbnailUrl = req.files.thumbnail[0].path;
@@ -71,13 +42,13 @@ const uploadNote = async (req, res) => {
       thumbnailUrl = fileUrl.replace("/upload/", "/upload/w_400,h_225,c_fill/");
     }
 
-    // ── Author Photo ───────────────────────────────────────────────────────────
+    //  Author Photo (for guest)
     let authorPhotoUrl = "";
-    if (req.files.photo && req.files.photo[0]) {
+    if (isGuest && req.files.photo?.[0]) {
       authorPhotoUrl = req.files.photo[0].path;
     }
 
-    // ── Body Fields ────────────────────────────────────────────────────────────
+    //  Body Fields
     const {
       title,
       description,
@@ -100,7 +71,7 @@ const uploadNote = async (req, res) => {
 
     const uploadedBy = req.user?.id || null;
 
-    // ── Resolve Author Name ────────────────────────────────────────────────────
+    //  Resolve Author Name
     // let resolvedAuthorName = authorName?.trim() || "";
     // if (!resolvedAuthorName) {
     //   if (!isGuest) {
@@ -110,7 +81,7 @@ const uploadNote = async (req, res) => {
     //     resolvedAuthorName = "Guest";
     //   }
     // }
-    // ── Resolve Author Name ────────────────────────────────────────────────────
+    //  Resolve Author Name
     let resolvedAuthorName = authorName?.trim() || "";
     if (!resolvedAuthorName) {
       if (!isGuest) {
@@ -146,7 +117,7 @@ const uploadNote = async (req, res) => {
   }
 };
 
-// ─── Get All Approved Notes ────────────────────────────────────────────────────
+//  Get All Approved Notes
 const getAllNotes = async (req, res) => {
   try {
     const { search, category, university, course, subject } = req.query;
@@ -191,7 +162,7 @@ const getAllNotes = async (req, res) => {
   }
 };
 
-// ─── Get One Note (increments viewCount) ──────────────────────────────────────
+//  Get One Note (increments viewCount)
 const getOneNote = async (req, res) => {
   try {
     // FIX: { new: true } — Mongoose option, not { returnDocument: "after" }
@@ -215,7 +186,7 @@ const getOneNote = async (req, res) => {
   }
 };
 
-// ─── Delete Note ───────────────────────────────────────────────────────────────
+//  Delete Note ─
 const deleteNote = async (req, res) => {
   try {
     const note = await noteModel.findById(req.params.id);
@@ -249,7 +220,7 @@ const deleteNote = async (req, res) => {
   }
 };
 
-// ─── Update Note (text fields only, re-queues for admin review) ───────────────
+//  Update Note (text fields only, re-queues for admin review) ─
 const updateNote = async (req, res) => {
   try {
     const note = await noteModel.findById(req.params.id);
