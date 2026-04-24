@@ -42,7 +42,7 @@ const getPublicProfile = async (req, res) => {
 
        const playlists = await playlistModel
       .find({ owner: user._id })
-      .populate("notes", "title category")
+      .populate("notes", "title category thumbnailUrl")
       .sort({ createdAt: -1 })
     res.status(200).json({ message: "Profile fetched successfully", user, notes,playlists })
   } catch (error) {
@@ -66,17 +66,17 @@ const getMyNotes = async (req, res) => {
 // My playlists
 const getMyPlaylists = async (req, res) => {
   try {
-    const id = req.user.id
+    const id = req.user.id;
     const playlists = await playlistModel
       .find({ owner: id })
-      .populate("notes", "title category")
-      .sort({ createdAt: -1 })
-    res.status(200).json({ message: "Playlists fetched successfully", playlists })
+      .populate("notes", "title category thumbnailUrl") // ← add thumbnailUrl
+      .sort({ createdAt: -1 });
+    res.status(200).json({ message: "Playlists fetched successfully", playlists });
   } catch (error) {
-    console.error(error)
-    res.status(500).json({ message: "Internal server error" })
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 
 // Update profile
 const updateProfile = async (req, res) => {

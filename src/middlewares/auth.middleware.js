@@ -69,9 +69,8 @@ const authUser = async (req, res, next) => {
     req.user = { id: userId, role: user.role };
     next();
   } catch (error) {
-    console.error(error);
-    res.status(401).json({ message: "Unauthorized" });
-  }
+     console.error("AUTH ERROR:", error.message); // ← add this
+    res.status(401).json({ message: "Unauthorized" }); }
 };
 
 const optionalAuth = async (req, res, next) => {

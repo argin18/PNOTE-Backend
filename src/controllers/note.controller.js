@@ -151,11 +151,13 @@ const getAllNotes = async (req, res) => {
       })
       .sort({ createdAt: -1 });
 
+      const filtered=notes.filter((note)=> !note.uploadedBy || !note.uploadedBy.isBanned)
+
     // FIX: removed the broken always-true filter that was dropping guest notes.
     // All notes that passed { status: "approved" } are valid — return them all.
     return res
       .status(200)
-      .json({ message: "Notes fetched successfully", notes });
+      .json({ message: "Notes fetched successfully", notes:filtered });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });

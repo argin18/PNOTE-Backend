@@ -11,14 +11,23 @@ const generateToken = (userId, role) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
-const setTokenCookie = (res, token) =>
+  const setTokenCookie = (res, token) =>
   res.cookie("token", token, {
     httpOnly: true,
-    // secure: process.env.NODE_ENV === "production",
-    secure:true,
-    sameSite: "none",
+    secure: process.env.NODE_ENV === "production",  // ✅ false on localhost
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // ✅ lax on localhost
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
+
+  // For production
+// const setTokenCookie = (res, token) =>
+//   res.cookie("token", token, {
+//     httpOnly: true,
+//     // secure: process.env.NODE_ENV === "production",
+//     secure:true,
+//     sameSite: "none",
+//     maxAge: 7 * 24 * 60 * 60 * 1000,
+//   });
 
 // Register
 const registerUser = async (req, res) => {

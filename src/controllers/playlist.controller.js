@@ -24,11 +24,6 @@ const getPlaylistById = async (req, res) => {
     if (!playlist)
       return res.status(404).json({ message: "Playlist not found" });
 
-    // if (playlist.owner.toString() !== req.user.id) {
-    //   // ← owner
-    //   return res.status(403).json({ message: "Forbidden" });
-    // }
-
     res.status(200).json({ playlist });
   } catch (error) {
     console.error(error);
