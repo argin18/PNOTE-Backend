@@ -5,24 +5,24 @@ const { getAllReport, updateReportStatus } = require('../controllers/report.cont
 
 const router = express.Router()
 
-router.use(authUser, authAdmin)
+// router.use(authUser, authAdmin)
 
 // Stats
 router.get("/stats", getStats)
 
 // Notes — order matters: specific routes before param routes
-router.get("/notes/pending", getPendingNotes)   // ← must be before /notes/:id
-router.get("/notes", getAdminNotes)
-router.put("/notes/:id", updateNoteStatus)
-router.delete("/notes/:id", deleteNote)
+router.get("/notes/pending",authUser, authAdmin, getPendingNotes)   // ← must be before /notes/:id
+router.get("/notes",authUser, authAdmin, getAdminNotes)
+router.put("/notes/:id",authUser, authAdmin, updateNoteStatus)
+router.delete("/notes/:id",authUser, authAdmin, deleteNote)
 
 // Reports
-router.get("/reports", getAllReport)
-router.put("/reports/:id", updateReportStatus)
+router.get("/reports",authUser, authAdmin, getAllReport)
+router.put("/reports/:id",authUser, authAdmin, updateReportStatus)
 
 // Users
-router.get("/users", getAllUsers)
-router.put("/users/:id/strike", issueStrike)
-router.put("/users/:id/ban", toggleBanUser)
+router.get("/users",authUser, authAdmin, getAllUsers)
+router.put("/users/:id/strike",authUser, authAdmin, issueStrike)
+router.put("/users/:id/ban",authUser, authAdmin, toggleBanUser)
 
 module.exports = router
