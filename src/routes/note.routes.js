@@ -14,9 +14,9 @@ router.post("/upload",optionalAuth, upload.fields([
   { name: "photo", maxCount: 1 },
   { name: "thumbnail", maxCount: 1 }
 ]), uploadNote)
+router.get("/my-notes", authUser, getMyNotes)
 router.get("/", getAllNotes)
 router.get("/:id", getOneNote)
-router.get("/my-notes", authUser, getMyNotes)
 router.delete("/:id", authUser, deleteNote)
 router.put('/:id',authUser,updateNote)
 
