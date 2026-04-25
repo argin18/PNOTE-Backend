@@ -120,7 +120,7 @@ const uploadNote = async (req, res) => {
 //  Get All Approved Notes
 const getAllNotes = async (req, res) => {
   try {
-    const { search, category, university, course, subject } = req.query;
+    const { search, category, university,semester, course, subject } = req.query;
     const filter = { status: "approved" };
 
     if (search) {
@@ -130,6 +130,7 @@ const getAllNotes = async (req, res) => {
         { tags: { $elemMatch: { $regex: search, $options: "i" } } },
         { subject: { $regex: search, $options: "i" } },
         { course: { $regex: search, $options: "i" } },
+        { semester: { $regex: search, $options: "i" } },
         { university: { $regex: search, $options: "i" } },
         { authorName: { $regex: search, $options: "i" } },
       ];
@@ -138,11 +139,10 @@ const getAllNotes = async (req, res) => {
     if (category) filter.category = category;
     if (university)
       filter.university = { $regex: `^${university}$`, $options: "i" };
+    if (course) filter.semester = { $regex: `^${semester}$`, $options: "i" };
     if (course) filter.course = { $regex: `^${course}$`, $options: "i" };
     if (subject) filter.subject = { $regex: `^${subject}$`, $options: "i" };
 
-    // FIX: removed `match: { isBanned: false }` — it nullifies uploadedBy
-    // causing the old filter to drop valid notes. Fetch isBanned in select instead.
     const notes = await noteModel
       .find(filter)
       .populate({
@@ -153,9 +153,7 @@ const getAllNotes = async (req, res) => {
 
       const filtered=notes.filter((note)=> !note.uploadedBy || !note.uploadedBy.isBanned)
 
-    // FIX: removed the broken always-true filter that was dropping guest notes.
-    // All notes that passed { status: "approved" } are valid — return them all.
-    return res
+       return res
       .status(200)
       .json({ message: "Notes fetched successfully", notes:filtered });
   } catch (error) {
