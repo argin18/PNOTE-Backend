@@ -186,6 +186,20 @@ const getOneNote = async (req, res) => {
   }
 };
 
+// Get  my Note
+const getMyNotes = async (req, res) => {
+  try {
+    const notes = await noteModel.find({ uploadedBy: req.user.id })
+      .select("_id title subject") // only what the modal needs
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ notes });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 //  Delete Note ─
 const deleteNote = async (req, res) => {
   try {
@@ -281,6 +295,7 @@ module.exports = {
   uploadNote,
   getAllNotes,
   getOneNote,
+  getMyNotes,
   deleteNote,
   updateNote,
 };

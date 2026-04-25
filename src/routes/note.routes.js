@@ -16,6 +16,7 @@ router.post("/upload",optionalAuth, upload.fields([
 ]), uploadNote)
 router.get("/", getAllNotes)
 router.get("/:id", getOneNote)
+router.get("/my-notes", authUser, getMyNotes)
 router.delete("/:id", authUser, deleteNote)
 router.put('/:id',authUser,updateNote)
 
