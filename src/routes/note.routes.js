@@ -1,6 +1,6 @@
 const express = require('express')
 const upload = require('../middlewares/upload.middleware')
-const { getAllNotes, getOneNote, deleteNote, uploadNote,updateNote } = require('../controllers/note.controller')
+const { getAllNotes, getOneNote,getMyNotes, deleteNote, uploadNote,updateNote } = require('../controllers/note.controller')
 const { authUser,optionalAuth } = require('../middlewares/auth.middleware')
 const router = express.Router()
 
