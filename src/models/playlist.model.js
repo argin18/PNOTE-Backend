@@ -5,7 +5,7 @@ const playlistSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    maxLength: 50
+    maxLength: 100
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
