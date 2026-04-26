@@ -11,8 +11,8 @@ const createPlaylist = async (req, res) => {
       .status(201)
       .json({ message: "Playlist created successfully", playlist });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+  console.error(error);
+     res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -26,9 +26,9 @@ const getPlaylistById = async (req, res) => {
 
     res.status(200).json({ playlist });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
+   console.error(error);
+     res.status(500).json({ success: false, message: error.message });
+ }
 };
 
 // Add note to playlist
