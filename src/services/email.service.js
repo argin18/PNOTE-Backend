@@ -34,6 +34,7 @@ const sendEmail = async (to, subject, text, html) => {
   }
 };
 
+// OTP code
 const sendOTPEmail = async (toEmail, otp) => {
   const subject = "Verify your email - OTP";
   const text = `Your OTP is: ${otp}. It expires in 10 minutes.`;
@@ -46,6 +47,7 @@ const sendOTPEmail = async (toEmail, otp) => {
   await sendEmail(toEmail, subject, text, html);
 };
 
+// Welcome message
 const sendWelcomeEmail = async (userEmail, name) => {
   const subject = "Welcome to Pnote!";
   const text = `Hello ${name},\n\nThank you for registering at Pnote. We're excited to have you on board!\n\nBest regards,\nThe Pnote Team`;
@@ -58,4 +60,26 @@ const sendWelcomeEmail = async (userEmail, name) => {
   await sendEmail(userEmail, subject, text, html);
 };
 
-module.exports = { sendOTPEmail, sendWelcomeEmail };
+// For reset Link
+const sendPasswordResetEmail = async (toEmail, resetLink) => {
+  const subject = "Reset your password - Pnote"
+  const text = `Click this link to reset your password: ${resetLink}. It expires in 15 minutes.`
+  const html = `
+    <h2>Password Reset Request</h2>
+    <p>You requested to reset your password.</p>
+    <a href="${resetLink}" style="
+      display:inline-block;
+      padding:12px 24px;
+      background:#2563eb;
+      color:white;
+      text-decoration:none;
+      border-radius:6px;
+      font-weight:bold;
+    ">Reset Password</a>
+    <p>This link expires in <b>15 minutes</b>.</p>
+    <p>If you didn't request this, ignore this email.</p>
+  `
+  await sendEmail(toEmail, subject, text, html)
+}
+
+module.exports = { sendOTPEmail, sendWelcomeEmail,sendPasswordResetEmail };

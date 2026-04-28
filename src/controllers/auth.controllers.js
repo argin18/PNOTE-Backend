@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const userModel = require("../models/user.model");
-const { sendOTPEmail, sendWelcomeEmail } = require("../services/email.service");
+const { sendOTPEmail, sendWelcomeEmail,sendPasswordResetEmail } = require("../services/email.service");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -127,7 +127,6 @@ const loginUser = async (req, res) => {
       })
     }
 
-    // ← ban check here
     if (user.isBanned) {
       return res.status(403).json({
         message: "Your account has been banned. Contact support.",
@@ -148,8 +147,8 @@ const loginUser = async (req, res) => {
       user: { _id: user._id, username: user.username, email: user.email, role: user.role },
     })
   } catch (error) {
-    console.error(error)
-    return res.status(500).json({ message: "Server error!" })
+    console.error(error);
+     res.status(500).json({ success: false, message: error.message });
   }
 }
 
@@ -194,4 +193,67 @@ const getMe = async (req, res) => {
   }
 }
 
-module.exports = {getMe, registerUser, verifyOTP, loginUser, logoutUser };
+// Forgot Password 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body
+
+    const user = await userModel.findOne({ email })
+
+    // always return 200 even if user not found — prevents email enumeration
+    if (!user) {
+      return res.status(200).json({ message: "If that email exists, a reset link has been sent." })
+    }
+
+    // generate raw token → send in email
+    const rawToken = crypto.randomBytes(32).toString("hex")
+
+    // hash token → store in DB (never store raw token)
+    const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex")
+
+    user.resetToken = hashedToken
+    user.resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
+    await user.save()
+
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${rawToken}`
+    await sendPasswordResetEmail(user.email, resetLink)
+
+    res.status(200).json({ message: "If that email exists, a reset link has been sent." })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: "Internal server error" })
+  }
+}
+
+// Reset Password
+const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params
+    const { password } = req.body
+
+    // hash the raw token from URL to compare with DB
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex")
+
+    const user = await userModel.findOne({
+      resetToken: hashedToken,
+      resetTokenExpiry: { $gt: new Date() }, // not expired
+    }).select("+password")
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired reset link." })
+    }
+
+    // update password
+    user.password = await bcrypt.hash(password, 10)
+    user.resetToken = undefined
+    user.resetTokenExpiry = undefined
+    await user.save()
+
+    res.status(200).json({ message: "Password reset successful. You can now log in." })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: "Internal server error" })
+  }
+}
+
+module.exports = {getMe,forgotPassword,resetPassword, registerUser, verifyOTP, loginUser, logoutUser };

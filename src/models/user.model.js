@@ -25,9 +25,9 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       match: [/^\S+@\S+\.\S+$/, "Invalid email format"],
     },
-    isBanned:{
-      type:Boolean,
-      default :false
+    isBanned: {
+      type: Boolean,
+      default: false,
     },
     password: {
       type: String,
@@ -35,26 +35,33 @@ const userSchema = new mongoose.Schema(
       minlength: 8,
       select: false,
     },
-    role:{
-      type:String,
-      enum:["user","admin"],
-      default:"user"
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
     },
-    avatar:{
-      type:String,
-      default:""
+    avatar: {
+      type: String,
+      default: "",
     },
     strikes: {
-  type: Number,
-  default: 0
-},
-    points:{
-      type:Number,
-      default:0
+      type: Number,
+      default: 0,
+    },
+    points: {
+      type: Number,
+      default: 0,
     },
     otp: { type: String },
     otpExpiry: { type: Date },
     isVerified: { type: Boolean, default: false },
+
+    resetToken: {
+      type: String,
+    },
+    resetTokenExpiry: {
+      type: Date,
+    },
   },
   { timestamps: true },
 );
